@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: root
+  flyway:
+    baseline-on-migrate: false
+    enabled: true
+    schemas:
+      - public
+    locations:
+      - classpath:/db
