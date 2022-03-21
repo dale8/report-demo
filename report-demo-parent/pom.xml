@@ -28,6 +28,7 @@
 
 	<modules>
 		<module>report-demo-core</module>
+		<module>report-demo-rest</module>
 	</modules>
 
 	<dependencies>

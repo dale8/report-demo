@@ -50,5 +50,12 @@ Example:
 1. clone or download this repo
 2. execute `mvn install` in report-demo-starter folder
 3. setup database according to settings in report-demo-parent/report-demo-rest/src/main/resources/application.yml
-4. start report-demo-rest project
-5. make a GET request `http://localhost:8080/api/report/rides-by-driver/download?driverId=1&writerType=CSV`, and in response you will receive a report file in form of .csv
+4. run `mvn build` in report-demo-parent folder (this is needed to generate jooq models)
+5. start report-demo-rest project
+6. make a GET request `http://localhost:8080/api/report/rides-by-driver/download?driverId=1&writerType=CSV`, and in response you will receive a report file in form of .csv. Replace `writerType=CSV` with `writerType=EXCEL` in request, and in response you will receive .xls report file.
+
+## Known limitations
+
+Without any manual setup starter will work on Spring Boot project only.
+
+Writer implementations provided by starter are good for printnig flat DTOs, meaning simple POJOs containing as fields only simle types, such as ints, booleans, Strings etc. Printing DTOs that contain fields of complex types, such as other DTOs, will depend on string representation of those types.
