@@ -29,7 +29,7 @@ It also provides writers (currently for .csv and .xls) which are using the above
 
 `@FieldNameTranslation` annotation can be applied to field or to getter method. If you have a get method that don't have corresponding field, but its name is sticking to convention (e.g `getSomething()` or `isSomethingTrue`), annotation can still be used on it.
 
-If value is not set for `@FieldNameTranslation` annotation, it will be derived from capitalized field name, divided in words by camelcase. For example: if field is named `someField` derived name will be `Some Field`.
+If value is not set for `@FieldNameTranslation` annotation, it will inferred from getter name; 'get' or 'is' start is dropped, the rest is split to words by camel case. For example: if getter is named `getSomeField` derived name will be `Some Field`.
 
 ### About `ReportWriters`
 
@@ -57,5 +57,7 @@ Example:
 ## Known limitations
 
 Without any manual setup starter will work on Spring Boot project only.
+
+DTOs to be translated have to be placed under the same package (or in subpackage) as the clas annotated with `@SpringBootApplication` (main class of the application)
 
 Writer implementations provided by starter are good for printnig flat DTOs, meaning simple POJOs containing as fields only simle types, such as ints, booleans, Strings etc. Printing DTOs that contain fields of complex types, such as other DTOs, will depend on string representation of those types.
