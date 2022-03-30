@@ -58,19 +58,23 @@
                 </executions>
 
                 <configuration>
-                    <jdbc>
-                        <driver>org.postgresql.Driver</driver>
-                        <url>jdbc:postgresql://localhost:5432/postgres</url>
-                        <user>postgres</user>
-                        <password>root</password>
-                    </jdbc>
-
                     <generator>
                         <database>
-                            <name>org.jooq.meta.postgres.PostgresDatabase</name>
-                            <includes>.*</includes>
-                            <excludes></excludes>
-                            <inputSchema>public</inputSchema>
+                            <name>org.jooq.meta.extensions.ddl.DDLDatabase</name>
+                            <properties>
+                                <property>
+                                    <key>scripts</key>
+                                    <value>src/main/resources/db/*_TABLES.sql</value>
+                                </property>
+                                <property>
+                                    <key>defaultNameCase</key>
+                                    <value>lower</value>
+                                </property>
+                                <property>
+                                    <key>renderQuotedNames</key>
+                                    <value>NEVER</value>
+                                </property>
+                            </properties>
                         </database>
                         <generate>
                             <pojos>true</pojos>
