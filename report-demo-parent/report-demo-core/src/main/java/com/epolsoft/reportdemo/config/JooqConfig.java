@@ -28,7 +28,6 @@ public class JooqConfig {
     public DefaultConfiguration configuration(@Autowired DataSourceConnectionProvider connectionProvider) {
         System.getProperties().setProperty("org.jooq.no-logo", "true");
         Settings settings = new Settings()
-                .withRenderQuotedNames(RenderQuotedNames.EXPLICIT_DEFAULT_UNQUOTED)
                 .withRenderNameCase(RenderNameCase.LOWER_IF_UNQUOTED);
         SQLDialect dialect = SQLDialect.POSTGRES;
 

@@ -2,6 +2,7 @@ package com.epolsoft.reportwriterstarter.infrastructure;
 
 
 import com.epolsoft.reportwriterstarter.annotation.FieldNameTranslation;
+import com.epolsoft.reportwriterstarter.annotation.TranslatableDTO;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -9,6 +10,7 @@ import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -17,20 +19,18 @@ import java.util.stream.Collectors;
 
 public class FieldNameTranslationAnnotationProcessor {
 
+    private static final Class<FieldNameTranslation> fieldNameTranslationClass = FieldNameTranslation.class;
+
     public Map<String, Method> getTranslations(Class<?> valueType) {
+        boolean ignoreNonAnnotated = valueType.getAnnotation(TranslatableDTO.class).ignoreNonAnnotated();
         List<Method> getters = getGetters(valueType);
-        Class<FieldNameTranslation> fieldNameTranslationClass = FieldNameTranslation.class;
         List<Pair<Integer, Pair<String, Method>>> pairs = new ArrayList<>();
         for (Method getter : getters) {
-            if (getter.isAnnotationPresent(fieldNameTranslationClass)) {
-                addByGetterIfNotIgnored(pairs, getter);
+            if (translationAnnotationPresent(getter)) {
+                addIfNotIgnored(pairs, getter, getter);
             } else {
                 Field field = getField(valueType, getter);
-                if (field == null || !field.isAnnotationPresent(fieldNameTranslationClass)) {
-                    pairs.add(Pair.of(Integer.MAX_VALUE, Pair.of(getPropertyNameByGetter(getter), getter)));
-                } else {
-                    addByFieldIfNotIgnored(pairs, field, getter);
-                }
+                processField(pairs, getter, field, ignoreNonAnnotated);
             }
         }
         return pairs.stream()
@@ -39,27 +39,26 @@ public class FieldNameTranslationAnnotationProcessor {
                 .collect(Collectors.toMap(Pair::getLeft, Pair::getRight, (o1, o2) -> o1, LinkedHashMap::new));
     }
 
-    private void addByFieldIfNotIgnored(List<Pair<Integer, Pair<String, Method>>> pairs, Field field, Method getter) {
-        Class<FieldNameTranslation> fieldNameTranslationClass = FieldNameTranslation.class;
-        if (!field.getAnnotation(fieldNameTranslationClass).ignore()) {
-            String value = field.getAnnotation(fieldNameTranslationClass).value();
-            if (value.isEmpty()) {
-                pairs.add(Pair.of(Integer.MAX_VALUE, Pair.of(getPropertyNameByGetter(getter), getter)));
-            } else {
-                pairs.add(Pair.of(field.getAnnotation(fieldNameTranslationClass).order(), Pair.of(value, getter)));
-            }
+    private void processField(List<Pair<Integer, Pair<String, Method>>> pairs, Method getter, Field field, boolean ignoreNonAnnotated) {
+        if (field != null && translationAnnotationPresent(field)) {
+            addIfNotIgnored(pairs, field, getter);
+        } else if (!ignoreNonAnnotated) {
+            pairs.add(Pair.of(Integer.MAX_VALUE, Pair.of(getPropertyNameByGetter(getter), getter)));
         }
     }
 
-    private void addByGetterIfNotIgnored(List<Pair<Integer, Pair<String, Method>>> pairs, Method getter) {
-        Class<FieldNameTranslation> fieldNameTranslationClass = FieldNameTranslation.class;
-        if (!getter.getAnnotation(fieldNameTranslationClass).ignore()) {
-            String value = getter.getAnnotation(fieldNameTranslationClass).value();
-            if (value.isEmpty()) {
-                pairs.add(Pair.of(Integer.MAX_VALUE, Pair.of(getPropertyNameByGetter(getter), getter)));
-            } else {
-                pairs.add(Pair.of(getter.getAnnotation(fieldNameTranslationClass).order(), Pair.of(value, getter)));
-            }
+    private void addIfNotIgnored(List<Pair<Integer, Pair<String, Method>>> pairs, AccessibleObject getterOrField, Method getter) {
+        if (notIgnored(getterOrField)) {
+            String translation = getTranslationValue(getterOrField);
+            pairs.add(Pair.of(getTranslationOrder(getterOrField), getTranslationGetterPair(translation, getter)));
+        }
+    }
+
+    private Pair<String, Method> getTranslationGetterPair(String translation, Method getter) {
+        if (translation.isEmpty()) {
+            return Pair.of(getPropertyNameByGetter(getter), getter);
+        } else {
+            return Pair.of(translation, getter);
         }
     }
 
@@ -110,5 +109,21 @@ public class FieldNameTranslationAnnotationProcessor {
         }
         return StringUtils.join(
                 StringUtils.splitByCharacterTypeCamelCase(getterName.substring(2)), " ");
+    }
+
+    private boolean translationAnnotationPresent(AccessibleObject getterOrField) {
+        return getterOrField.isAnnotationPresent(fieldNameTranslationClass);
+    }
+
+    private boolean notIgnored(AccessibleObject getterOrField) {
+        return !getterOrField.getAnnotation(fieldNameTranslationClass).ignore();
+    }
+
+    private String getTranslationValue(AccessibleObject getterOrField) {
+        return getterOrField.getAnnotation(fieldNameTranslationClass).value();
+    }
+
+    private int getTranslationOrder(AccessibleObject getterOrField) {
+        return getterOrField.getAnnotation(fieldNameTranslationClass).order();
     }
 }

@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 
 @Builder
 @Getter
-@TranslatableDTO
+@TranslatableDTO(ignoreNonAnnotated = false)
 public class RidesByDriverReportDTO {
 
     @FieldNameTranslation(value = "Imię i nazwisko kierowcy", order = 1)

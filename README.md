@@ -20,12 +20,17 @@ Starter is designed to address this problem. It provides two annotations:
 
 It also provides writers (currently for .csv and .xls) which are using the above annotations to crreate (or append) files based on this information. Writers can write file on a disk, or return a `ByteArrayOutputStream` that can be used for example to return file with REST service.
 
+### About `@TranslatableDTO` annotation
+
+`@TranslatableDTO` has one property:
+- `ignoreNonAnnotated = Boolean` - boolean value describing behavior regarding fields (or getters) not annotated with `@FieldNameTranslation` annotation. Default value is `true`, which means that if there is a field (or a getter without corresponding field) not annotated with `@FieldNameTranslation` annotation, it will not be printed by writer. If set to false, then all fields (or getters without corresponding fields) not annotated with `@FieldNameTranslation` annotation will be printed.
+
 ### About `@FieldNameTranslation` annotation
 
 `@FieldNameTranslation` annotation recives three arguments:
-- `value = String` string representing desired header of this column (default - blank string)
-- `order = Integer` int value instructing writer in which order columns should appear (default - `Integer.MAX_VALUE`)
-- `ignore = Boolean` boolean value instructing writer not to print this column
+- `value = String` - string representing desired header of this column (default - blank string)
+- `order = Integer` - int value instructing writer in which order columns should appear (default - `Integer.MAX_VALUE`)
+- `ignore = Boolean` - boolean value explicitly instructing writer not to print this column (default - `false`)
 
 `@FieldNameTranslation` annotation can be applied to field or to getter method. If you have a get method that don't have corresponding field, but its name is sticking to convention (e.g `getSomething()` or `isSomethingTrue`), annotation can still be used on it.
 
@@ -60,4 +65,4 @@ Without any manual setup starter will work on Spring Boot project only.
 
 DTOs to be translated have to be placed under the same package (or in subpackage) as the clas annotated with `@SpringBootApplication` (main class of the application)
 
-Writer implementations provided by starter are good for printnig flat DTOs, meaning simple POJOs containing as fields only simle types, such as ints, booleans, Strings etc. Printing DTOs that contain fields of complex types, such as other DTOs, will depend on string representation of those types.
+Writer implementations provided by starter are good for printnig flat DTOs, meaning simple POJOs containing as fields only simple types, such as ints, booleans, Strings etc. Printing DTOs that contain fields of complex types, such as other DTOs, will depend on string representation of those types.
